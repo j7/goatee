@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Goatee by johnernaut</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Goatee</h1>
+        <p>A Redis-backed notification server written in Go</p>
+
+        <p class="view"><a href="https://github.com/johnernaut/goatee">View the Project on GitHub <small>johnernaut/goatee</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/johnernaut/goatee/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/johnernaut/goatee/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/johnernaut/goatee">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="goatee" class="anchor" href="#goatee"><span class="octicon octicon-link"></span></a>goatee</h1>
+
+<p>A Redis-backed notification server written in Go.</p>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p><code>go get github.com/johnernaut/goatee</code></p>
+
+<p><code>import "github.com/johnernaut/goatee"</code></p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p><strong>goatee</strong> works by listening on a channel via <a href="http://redis.io/topics/pubsub">Redis Pub/Sub</a> and then sending the received message to connected clients via <a href="http://en.wikipedia.org/wiki/WebSocket">WebSockets</a>.</p>
+
+<h3>
+<a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>Configuration</h3>
+
+<p><strong>goatee</strong> will look for a JSON configuration file in a <code>config</code> folder at the root of your project with the following names based on your environment: <code>development.json</code>, <code>production.json</code>, <code>etc</code>.  By default <code>config/development.json</code> will be used but you can also specify a <code>GO_ENV</code> environment variable and the name of that will be used instead.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="c1">// example json configuration</span>
+<span class="c1">// specify redis and websocket hosts</span>
+<span class="p">{</span>
+  <span class="s2">"redis"</span><span class="o">:</span> <span class="p">{</span>
+    <span class="s2">"host"</span><span class="o">:</span> <span class="s2">"localhost:6379"</span>
+  <span class="p">},</span>
+  <span class="s2">"web"</span><span class="o">:</span> <span class="p">{</span>
+    <span class="s2">"host"</span><span class="o">:</span> <span class="s2">"localhost:1235"</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+<h1></h1>
+
+<h4>
+<a name="server" class="anchor" href="#server"><span class="octicon octicon-link"></span></a>Server</h4>
+
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/johnernaut/goatee"</span>
+    <span class="s">"log"</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">goatee</span><span class="p">.</span><span class="nx">CreateServer</span><span class="p">(</span><span class="s">"achannel"</span><span class="p">)</span> <span class="c1">// pass in the redis channel you'd like to subscribe to</span>
+
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="s">"Error: "</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">Error</span><span class="p">())</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+<h1></h1>
+
+<h4>
+<a name="client" class="anchor" href="#client"><span class="octicon octicon-link"></span></a>Client</h4>
+
+<div class="highlight highlight-html"><pre><span class="cp">&lt;!doctype html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;head&gt;&lt;title&gt;</span>goatee<span class="nt">&lt;/title&gt;&lt;/head&gt;</span>
+  <span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;h1&gt;</span>Websocket Messages:<span class="nt">&lt;/h1&gt;</span>
+    <span class="nt">&lt;ul</span> <span class="na">id=</span><span class="s">"ws"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;/ul&gt;</span>
+  <span class="nt">&lt;/body&gt;</span>
+  <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"http://code.jquery.com/jquery-1.10.1.min.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+  <span class="nt">&lt;script&gt;</span>
+    <span class="kd">var</span> <span class="nx">ws</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebSocket</span><span class="p">(</span><span class="s2">"ws://localhost:1235/"</span><span class="p">);</span> <span class="c1">// based on the websocket host set in your config file</span>
+    <span class="nx">ws</span><span class="p">.</span><span class="nx">onopen</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'opened!'</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="nx">ws</span><span class="p">.</span><span class="nx">onclose</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'closed!'</span> <span class="o">+</span> <span class="nx">e</span><span class="p">.</span><span class="nx">code</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="nx">ws</span><span class="p">.</span><span class="nx">onerror</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Error: "</span> <span class="o">+</span> <span class="nx">error</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="nx">ws</span><span class="p">.</span><span class="nx">onmessage</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">$</span><span class="p">(</span><span class="s1">'#ws'</span><span class="p">).</span><span class="nx">append</span><span class="p">(</span><span class="s1">'&lt;li&gt;'</span> <span class="o">+</span> <span class="nx">e</span><span class="p">.</span><span class="nx">data</span> <span class="o">+</span> <span class="s1">'&lt;/li&gt;'</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="nt">&lt;/script&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</pre></div>
+
+<h1></h1>
+
+<h4>
+<a name="redis" class="anchor" href="#redis"><span class="octicon octicon-link"></span></a>Redis</h4>
+
+<p>With <strong>goatee</strong> running and your web browser connected to the socket, you should now be able to test message sending from Redis to your client (browser).  Run <code>redis-cli</code> and publish a message to the channel you subscribed to in your Go server.  E.x. <code>publish 'mychannel' 'mymessage'</code></p>
+
+<h2>
+<a name="tests" class="anchor" href="#tests"><span class="octicon octicon-link"></span></a>Tests</h2>
+
+<p><code>go test github.com/johnernaut/goatee</code></p>
+
+<h2>
+<a name="authors" class="anchor" href="#authors"><span class="octicon octicon-link"></span></a>Authors</h2>
+
+<ul>
+<li><a href="https://github.com/johnernaut">johnernaut</a></li>
+</ul>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/johnernaut">johnernaut</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
